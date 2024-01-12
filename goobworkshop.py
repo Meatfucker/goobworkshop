@@ -30,8 +30,7 @@ class GoobWorkshop(customtkinter.CTk):
         self.download_sdxl_models()
         self.sdxl_scheduler = DPMSolverSDEScheduler()
         self.sdxl_pipe = StableDiffusionXLPipeline.from_single_file("assets/zavychromaxl_v30.safetensors", torch_dtype=torch.float16,
-                                                  scheduler=self.sdxl_scheduler, add_watermarker=False, use_safetensors=True,
-                                                  low_cpu_mem_usage=True)
+                                                                    scheduler=self.sdxl_scheduler, add_watermarker=False, use_safetensors=True, low_cpu_mem_usage=True)
         self.ip_pipe = IPAdapterFaceIDXL(self.sdxl_pipe, "assets/ip-adapter-faceid_sdxl.bin", "cuda")
         self.face_embeds = self.make_face_embeds()
 
@@ -74,7 +73,6 @@ class GoobWorkshop(customtkinter.CTk):
             faces = face_pipe.get(lighty_image)
             self.face_embeds = torch.from_numpy(faces[0].normed_embedding).unsqueeze(0)
 
-
     def copy_image_to_clipboard(self, event):
         if self.output_images and len(self.output_images) > 0:
 
@@ -94,23 +92,20 @@ class GoobWorkshop(customtkinter.CTk):
 
     def random_artist(self):
         if self.last_artist is not None:
-                prompt = self.prompt_entry.get("1.0", "end-1c").replace(f'. {self.last_artist}', '')
-                self.prompt_entry.delete("0.0", "end")
-                self.prompt_entry.insert("1.0", prompt)
+            prompt = self.prompt_entry.get("1.0", "end-1c").replace(f'. {self.last_artist}', '')
+            self.prompt_entry.delete("0.0", "end")
+            self.prompt_entry.insert("1.0", prompt)
         self.last_artist = self.get_random_artist_prompt()
         prompt = f'{self.prompt_entry.get("1.0", "end-1c")}. {self.last_artist}'
         self.prompt_entry.delete("0.0", "end")
         self.prompt_entry.insert("1.0", prompt)
-
-
 
     def generate(self, event=None):
 
         prompt = self.prompt_entry.get("1.0", "end-1c")
         negative_prompt = self.negative_prompt_entry.get("1.0", "end-1c")
         self.output_images = self.ip_pipe.generate(prompt=prompt, negative_prompt=negative_prompt, faceid_embeds=self.face_embeds, num_samples=1,
-                           width=1024, height=1024, num_inference_steps=50, guidance_scale=7,
-                           seed=random.randint(-2147483648, 2147483647))
+                                                   width=1024, height=1024, num_inference_steps=50, guidance_scale=7, seed=random.randint(-2147483648, 2147483647))
         self.display_photo = customtkinter.CTkImage(light_image=self.output_images[0], dark_image=self.output_images[0], size=(1024, 1024))
         self.image_label.configure(image=self.display_photo)
         self.save_image()
@@ -140,6 +135,7 @@ class GoobWorkshop(customtkinter.CTk):
             data = json.load(file)
             selected_artist = random.choice(data)
             return selected_artist.get('prompt')
+
 
 goobgui = GoobWorkshop()
 goobgui.mainloop()
