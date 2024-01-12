@@ -7,6 +7,3 @@ echo Virtual environment created and activated.
 pip install -r requirements.txt
 echo Dependencies installed from requirements.txt.
 python goobworkshop.py
-
-
-pause

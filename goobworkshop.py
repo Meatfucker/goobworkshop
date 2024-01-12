@@ -6,12 +6,15 @@ import requests
 import os
 import re
 import json
+import base64
+from io import BytesIO
 from datetime import datetime
 from diffusers import StableDiffusionXLPipeline, DPMSolverSDEScheduler
 from PIL import Image, ImageTk
 from assets.ip_adapter.ip_adapter_faceid import IPAdapterFaceIDXL
 import customtkinter
 from huggingface_hub import hf_hub_download
+from tkinter import filedialog
 
 
 class GoobWorkshop(customtkinter.CTk):
@@ -57,6 +60,37 @@ class GoobWorkshop(customtkinter.CTk):
         self.generate_button.grid(row=3, column=1, padx=5, pady=5, sticky="ew", columnspan=2)
 
         self.bind("<Return>", self.generate)
+        self.image_label.bind("<Button-3>", self.copy_image_to_clipboard)
+
+        self.load_image_button = customtkinter.CTkButton(self, text="Select new face", command=self.load_new_face)
+        self.load_image_button.grid(row=4, column=1, padx=5, pady=5, sticky="ew", columnspan=2)
+
+    def load_new_face(self):
+        imagepath = filedialog.askopenfilename()
+        if imagepath:
+            lighty_image = cv2.imread(imagepath)
+            face_pipe = FaceAnalysis(name="buffalo_l", providers=['CUDAExecutionProvider'])
+            face_pipe.prepare(ctx_id=0, det_size=(640, 640))
+            faces = face_pipe.get(lighty_image)
+            self.face_embeds = torch.from_numpy(faces[0].normed_embedding).unsqueeze(0)
+
+
+    def copy_image_to_clipboard(self, event):
+        if self.output_images and len(self.output_images) > 0:
+
+            # Convert PIL image to base64
+            pil_image = self.output_images[0]
+            image_buffer = BytesIO()
+            pil_image.save(image_buffer, format="PNG")
+            base64_image = base64.b64encode(image_buffer.getvalue()).decode("utf-8")
+
+            # Format the base64 data with PNG markup
+            base64_data = f"data:image/png;base64,{base64_image}"
+
+            # Copy the base64 data to the clipboard
+            self.clipboard_clear()
+            self.clipboard_append(base64_data)
+            self.update()
 
     def random_artist(self):
         if self.last_artist is not None:
