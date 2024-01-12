@@ -1,5 +1,5 @@
 # Goob Workshop
-![](assets\example.png)
+![](/assets/example.png)
 This makes lightys. It can also make other people if you hit the load face button and load a face.
 
 To use run start.bat and wait while it downloads a shitload of stuff. 
